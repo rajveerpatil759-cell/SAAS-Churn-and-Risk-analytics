@@ -1,5 +1,5 @@
 -- =============================================================================
--- RAVEN PROJECT — Business Questions
+-- SAAS PROJECT — Business Questions
 -- =============================================================================
 -- Purpose : Answer 45 business questions across five domains:
 --           subscriptions, accounts, churn, feature usage, and support.
