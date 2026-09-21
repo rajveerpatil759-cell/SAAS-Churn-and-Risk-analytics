@@ -237,8 +237,6 @@ Exploratory analysis of churn patterns across account attributes, cross-checked 
 - Tenure-at-churn distribution and bucketed churn timing (0–30 days through 1yr+)
 - Plan-change behavior (upgrade/downgrade/no change) vs. churn
 
-> This project's machine learning component (model training, evaluation, and feature-importance analysis) is maintained as a separate repository: **[ravenstack-churn-prediction](#)** — kept independent so this repo stays focused on descriptive/diagnostic analysis and the dashboard.
-
 ---
 
 ##  Step 4 — Power BI: Interactive Dashboard
