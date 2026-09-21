@@ -1,5 +1,5 @@
 -- =============================================================================
--- RAVEN PROJECT — Feature Engineering
+-- SAAS PROJECT — Feature Engineering
 -- =============================================================================
 -- Purpose : Build account_level_features, a leakage-safe, one-row-per-account
 --           ML-ready table that aggregates subscriptions, feature usage, and
