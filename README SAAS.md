@@ -1,13 +1,13 @@
 #  SaaS Churn & Risk Analysis — End-to-End Business Intelligence Project
 
-> A complete data analytics project covering Python data engineering, SQL analysis, machine learning, and Power BI dashboard development on a synthetic B2B SaaS customer dataset.
+> A complete data analytics project covering Python data engineering, SQL analysis, and Power BI dashboard development on a synthetic B2B SaaS customer dataset.
 
 ---
 
 ##  Project Overview
 
 **Project Title:** SaaS Customer Churn & Risk Analysis (RavenStack)
-**Tools:** Python (pandas, scikit-learn) · SQL (PostgreSQL) · Power BI · DAX
+**Tools:** Python (pandas) · SQL (PostgreSQL) · Power BI · DAX
 
 ---
 
@@ -36,8 +36,7 @@ ravenstack-churn-analysis/
 │
 ├── notebooks/
 │   ├── SAAS_data_loading.ipynb          ← load, dedupe, clean, push to Postgres
-│   ├── SAAS_Python_EDA.ipynb            ← exploratory analysis
-│   └── saas_Ml.ipynb                    ← model training + evaluation
+│   └── SAAS_Python_EDA.ipynb            ← exploratory analysis
 │
 ├── sql/
 │   ├── SAAS_feature_engineering.sql     ← builds account_level_features
@@ -180,7 +179,7 @@ Standardize Text Columns → Final Cleaning Audit → Push to PostgreSQL
 
 ###  Two Data Leakage Bugs Found and Fixed
 
-Building `account_level_features` (the ML-ready, one-row-per-account table) surfaced two separate leakage issues — worth documenting since catching these was a bigger part of this project than the modeling itself:
+Building `account_level_features` (a leakage-safe, one-row-per-account table designed for downstream modeling) surfaced two separate leakage issues — worth documenting since catching these was a bigger part of this project than the SQL and dashboard work that followed:
 
 **1. Churn-event-derived columns used as features.** The first version included `churn_events` count, `total_refund_amount`, and `reactivations` — all sourced from a table that, by definition, only has rows for accounts that already churned. These were removed entirely from the feature table; a model trained on them would look artificially perfect and be useless on new data.
 
@@ -227,25 +226,18 @@ END AS customer_tenure_days
 
 ---
 
-##  Step 3 — Python: Exploratory Analysis & Machine Learning
+##  Step 3 — Python: Exploratory Data Analysis
 
-**Files:** `notebooks/SAAS_Python_EDA.ipynb`, `notebooks/saas_Ml.ipynb`
+**File:** `notebooks/SAAS_Python_EDA.ipynb`
 
-### Model Approach
-- Logistic Regression, Decision Tree, and Random Forest compared, each with `class_weight="balanced"` (churn is 22% of accounts — an unweighted model just predicts "retained" for nearly everyone)
-- Classification threshold for Random Forest tuned via **5-fold cross-validated out-of-fold probabilities**, not by peeking at the test set — the threshold is selected on training data alone, then applied to the test set exactly once to report the final number
-- A majority-class baseline ("always predict Retained") reported alongside every model, so the headline metrics have a reference point
+Exploratory analysis of churn patterns across account attributes, cross-checked against the SQL business-questions results to confirm every chart matches the underlying query output before being trusted.
 
-### Final Model Result
+### What Was Explored
+- Churn rate by industry, referral source, plan tier, billing frequency, trial status, and auto-renewal status
+- Tenure-at-churn distribution and bucketed churn timing (0–30 days through 1yr+)
+- Plan-change behavior (upgrade/downgrade/no change) vs. churn
 
-| Model | Precision (Churned) | Recall (Churned) | F1 (Churned) | ROC-AUC |
-|---|---|---|---|---|
-| Baseline (always Retained) | — | 0.00 | 0.00 | — |
-| Logistic Regression | 0.29 | 0.45 | 0.35 | 0.655 |
-| Decision Tree | 0.38 | 0.55 | 0.44 | 0.686 |
-| **Random Forest (tuned threshold = 0.40)** | **0.42** | **0.64** | **0.51** | **0.727** |
-
-Reported as an honest ceiling, not an inflated one — the pre-leakage-fix version of this model originally scored a fabricated 1.00 across every metric before the two bugs above were found and fixed.
+> This project's machine learning component (model training, evaluation, and feature-importance analysis) is maintained as a separate repository: **[ravenstack-churn-prediction](#)** — kept independent so this repo stays focused on descriptive/diagnostic analysis and the dashboard.
 
 ---
 
@@ -253,7 +245,7 @@ Reported as an honest ceiling, not an inflated one — the pre-leakage-fix versi
 
 **File:** `dashboard/raven_churn_dashboard.pbix`
 
-The dashboard intentionally does not include ML risk scores — it answers the business question chain descriptively, at the segment level, keeping the predictive model as a separate, clearly-scoped deliverable.
+The dashboard answers the business question chain descriptively, at the segment level, rather than scoring individual accounts.
 
 ### DAX Measures — Key Patterns
 
@@ -381,7 +373,7 @@ Two of these are deliberately "stop doing X" rather than "do X" — a common Saa
 ### Python
 1. Install dependencies:
 ```bash
-pip install pandas sqlalchemy psycopg2-binary scikit-learn matplotlib seaborn
+pip install pandas sqlalchemy psycopg2-binary matplotlib seaborn
 ```
 2. Place the five `ravenstack_*.csv` files in the `/data` folder
 3. Set a `DATABASE_URL` environment variable pointing to your own PostgreSQL instance (no credentials are hardcoded in this repo)
